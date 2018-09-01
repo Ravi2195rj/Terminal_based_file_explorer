@@ -12,6 +12,12 @@
 #include <termios.h>
 #include <stack>
 #include <vector>
+#include <string>
+#include <fstream>
+#include <fstream>
+#include <iostream>
+#include <ftw.h>
+#include <sys/stat.h>
 #define commandmodeline 37
 using namespace std;
 
@@ -19,13 +25,78 @@ stack <string> stack1,stack2;
 
 char buf[1000],path[1000]=".",pop[1000];
 int curser_row=2,curser_column=1,file_num=2,total_files,level=0;
-
+string dst_root;
 DIR *point_to_directory;
 struct dirent **point_to_file;
 struct stat file_stat;
 //struct passwd *tf; 
 //struct group *gf;
+int copy_file(const char* src_path, const struct stat* sb, int typeflag) {
+    std::string dst_path = dst_root + src_path;
+    switch(typeflag) {
+    case FTW_D:
+        mkdir(dst_path.c_str(), sb->st_mode);
+        break;
+    case FTW_F:
+        std::ifstream  src(src_path, std::ios::binary);
+        std::ofstream  dst(dst_path, std::ios::binary);
+        dst << src.rdbuf();
+    }
+    return 0;
+}
 
+int copy_directory(const char* src_root)
+{
+    return ftw(src_root, copy_file,20);
+//extern "C" int copy_file(const char*, const struct stat, int);
+}
+bool copyFile(const char *SRC, const char* DEST)
+{
+    std::ifstream src(SRC, std::ios::binary);
+    std::ofstream dest(DEST, std::ios::binary);
+    dest << src.rdbuf();
+    stat(SRC, &file_stat);
+    chmod(DEST, file_stat.st_mode);
+    return src && dest;
+}
+string makefullpath(string str1)
+{
+    string str2;
+    if(str1[0]=='~')
+    {
+        str2.append(".");
+        str2.append(str1.begin()+1,str1.end());
+        return str2;
+    }
+    else if(str1[0]=='/')
+    {
+        str2.append(".");
+        str2.append(str1.begin(),str1.end());
+        return str2;
+    }
+    else if(str1[0]=='.')
+    {
+        return str1;
+    }
+    else
+    {
+        str2.append(stack1.top());
+        str2.append("/");
+        str2.append(str1);
+        return str2;
+    }
+}
+string findname(string str1)
+{
+  int i=str1.length()-1;
+  string str2;
+  while(str1[i]!='/')
+        --i;
+     // s1[i]='\0';
+  //  cout<<i;  
+    str2=str1.substr(i+1,str1.length()-i-1); 
+   return str2;
+}
 string findpath(string tempstr)
 {
     int i=tempstr.length()-1;
@@ -187,7 +258,7 @@ int main()
             else if(buffer[0]==10)//enter key
             {
               //cout<<"in command mode:";
-            std:: vector<string> v;
+              std:: vector<string> v;
               command[curser]='\0';
               char s[1000];
                 int j=0,i;
@@ -213,18 +284,131 @@ int main()
                     }
                         s[j]=command[i];
                         v.push_back(s);
-                    cout<<"\n";
-                    for(int i=0;i<v.size();i++)
-                        cout<<v[i]<<"|"<<flush;
-                    v.clear();
+                        cout<<"\n";
+                   // for(int i=0;i<v.size();i++)
+                    //    cout<<v[i]<<"|"<<flush;
                 
-                if()
+                 //   cout<<v[2]<<flush;
+                if(v[0]=="copy")
                 {
                     
-                }
-              
+                    for(int i=1;i<v.size()-1;i++)
+                    {   
+                        string destination_path=makefullpath(v[v.size()-1]);
+                        string source_path=makefullpath(v[i]);
+                        string temp;
+                        if(!stat(source_path.c_str(), &file_stat))
+                        {
 
-                sleep(3);
+                            if((file_stat.st_mode & S_IFMT)==S_IFDIR) //for directory
+                            {
+                                if(!stat(destination_path.c_str(), &file_stat))
+                                {
+                                    
+                                    destination_path.append("/");
+                                    temp.append(destination_path);
+                                    temp.append(findname(source_path));
+                                    source_path.append("/");
+                                    //cout<<temp<<flush;
+                                    if(stat(temp.c_str(), &file_stat))
+                                    {
+                                        dst_root.clear();
+                                        dst_root=destination_path;
+                                        copy_directory(source_path.c_str());
+                                        cout<<"Directory successfully copied!  "<<flush;    
+                                    }
+                                    else
+                                        cout<<"Destination already exists!  "<<flush;    
+                                    
+                                }
+                                else
+                                    cout<<"Destination path is not valid! "<<flush;
+                            }
+                            else
+                            {   
+                                if(!stat(destination_path.c_str(), &file_stat))
+                                {
+                               // stat(source_path.c_str(), &file_stat);
+                                    destination_path.append("/");
+                                    destination_path.append(findname(source_path));
+                                    if(stat(destination_path.c_str(), &file_stat))
+                                    {
+                                        if(copyFile(source_path.c_str(),destination_path.c_str()))
+                                        {
+                                            cout<<"Dile copied successfully! "<<flush;
+                                        }
+                                        else
+                                            cout<<"Dile does not exists or source or destination path is not valid!! "<<flush;    
+                                    }
+                                    else
+                                        cout<<"FIle already exists! "<<flush;
+                                      
+                                }
+                                else
+                                    cout<<"Destination path is not valid! "<<flush; 
+                            }
+                        }
+                        else
+                            cout<<"File or directory does not exists or source path is not valid! "<<flush;
+                        
+                       // cout<<"source:"<<source_path<<"  destination:"<<destination_path<<flush;
+                        //cout<<chmod(str2, the_stat.st_mode);
+                        //cout<<makefullpath(v[i])<<"|"<<flush;
+                    }
+                }
+                else if(v[0]=="move")
+                {
+
+                }
+                else if(v[0]=="rename")
+                {   
+                        string destination_path=makefullpath(v[2]);
+                        string source_path=makefullpath(v[1]);
+                        string temp1=findpath(source_path);
+                        string temp2=findpath(destination_path);
+                        if(!stat(source_path.c_str(), &file_stat) && (temp1==temp2))
+                        {
+                            if(!rename(source_path.c_str(),destination_path.c_str()))
+                               cout<<"File renamed successfully"<<flush;
+                        }
+                        else
+                            cout<<"File name does not exists or source path or destination is not valid"<<flush;
+                        
+                       // cout<<"source:"<<source_path<<"  destination:"<<destination_path<<flush;
+                        //cout<<chmod(str2, the_stat.st_mode);
+                        //cout<<makefullpath(v[i])<<"|"<<flush;
+                }
+                  //  
+                else if(v[0]=="create_file")
+                {
+
+                }
+                else if(v[0]=="create_dir")
+                {
+
+                }
+                else if(v[0]=="delelte_file")
+                {
+
+                }
+                else if(v[0]=="delete_dir")
+                {
+
+                }
+                else if(v[0]=="goto")
+                {
+
+                }
+                else if(v[0]=="search")
+                {
+
+                }
+                else if(v[0]=="snapshot")
+                {
+
+                }
+                v.clear();
+                sleep(4);
                 //cout<<temp<<flush;
                 
                 cout<<"\033["<<commandmodeline<<";"<<3<<"H"<<flush;
@@ -382,7 +566,7 @@ int main()
       //  cout<<"backspace pressed\n";
     }
     buffer[0]=buffer[1]=buffer[2]=0;
-  /*char ch,pop[10000],path[1000]=".";
+    /*char ch,pop[10000],path[1000]=".";
     
 
     while(1)
