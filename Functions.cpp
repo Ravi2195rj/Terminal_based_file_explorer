@@ -263,9 +263,6 @@ void ls(int startline,const char path[]) //listing files and folders
         
         stat(buf, &file_stat);
  
-       // cout<<c<<" ";
-        printf("%05.1f KB  ",((file_stat.st_size)/1024.0));
-           
         printf( (file_stat.st_mode & S_IRUSR) ? "r" : "-");
         printf( (file_stat.st_mode & S_IWUSR) ? "w" : "-");
         printf( (file_stat.st_mode & S_IXUSR) ? "x" : "-");
@@ -276,10 +273,12 @@ void ls(int startline,const char path[]) //listing files and folders
         printf( (file_stat.st_mode & S_IWOTH) ? "w" : "-");
         printf( (file_stat.st_mode & S_IXOTH) ? "x " : "- ");
        // char temparr[100]
+        printf(" %5.1f KB  ",((file_stat.st_size)/1024.0));
+
         strcpy(temparr,ctime(&file_stat.st_mtime));
         temparr[24]='\0';
         printf(" %s  ", temparr);
-        printf("%-s ", point_to_file[i]->d_name);
+        printf(" %-s ", point_to_file[i]->d_name);
         if(i<lastline-1)
             printf("\n");
 
