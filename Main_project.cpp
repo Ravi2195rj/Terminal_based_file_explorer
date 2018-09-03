@@ -205,7 +205,7 @@ int main()
                     cout<<"\033["<<commandmodeline<<";"<<3<<"H"<<flush;
                     curser=0,curser_column=3;
                 }
-                else if(v[0]=="move")
+                else if(v[0]=="move")  //Executing Move
                 {
                     for(int i=1;i<v.size()-1;i++)
                     {   
@@ -286,7 +286,7 @@ int main()
                     cout<<"\033["<<commandmodeline<<";"<<3<<"H"<<flush;
                     curser=0,curser_column=3;
                 }
-                else if(v[0]=="rename")
+                else if(v[0]=="rename")  //Executing Rename
                 {   
                         string destination_path=makefullpath(v[2]);
                         string source_path=makefullpath(v[1]);
@@ -318,7 +318,7 @@ int main()
                         curser=0,curser_column=3;
                 }
                   //  
-                else if(v[0]=="create_file")
+                else if(v[0]=="create_file")  //creating file
                 {
                         string destination_path=makefullpath(v[2]);
                         string filename=v[1];
@@ -354,7 +354,7 @@ int main()
                         curser=0,curser_column=3;
 
                 }
-                else if(v[0]=="create_dir")
+                else if(v[0]=="create_dir") //creating directory
                 {
                     string destination_path=makefullpath(v[2]);
                     string filename=v[1];
@@ -393,7 +393,7 @@ int main()
                         cout<<"\033["<<commandmodeline<<";"<<3<<"H"<<flush;
                         curser=0,curser_column=3;
                 }
-                else if(v[0]=="delete_file")
+                else if(v[0]=="delete_file") //deleting file
                 {
                     //cout<<makefullpath("../eae/eae")<<flush;
                     string destination_path=makefullpath(v[1]);
@@ -420,7 +420,7 @@ int main()
                     curser=0,curser_column=3;
 
                 }
-                else if(v[0]=="delete_dir")
+                else if(v[0]=="delete_dir") //deleting directory
                 {
                     string destination_path=makefullpath(v[1]);
                     
@@ -445,7 +445,7 @@ int main()
                     cout<<"\033["<<commandmodeline<<";"<<3<<"H"<<flush;
                     curser=0,curser_column=3;
                 }
-                else if(v[0]=="goto")
+                else if(v[0]=="goto") //executing goto command
                 {
                     string destination_path=makefullpath(v[1]);
                     if(!stat(destination_path.c_str(), &file_stat))
@@ -465,7 +465,7 @@ int main()
                         cout<<"Directory Path is not valid!!"<<flush;
 
                 }
-                else if(v[0]=="search")
+                else if(v[0]=="search") //searching
                 {
                     string search_file_name=v[1];
                     dst_root.clear();
@@ -510,7 +510,7 @@ int main()
                     // sleep(2);
                   //  curser=0,curser_column=3;
                 }
-                else if(v[0]=="snapshot")
+                else if(v[0]=="snapshot") //Executing snapshot
                 {
                     string dumpfile=makefullpath(v[2]);
                     string folder=makefullpath(v[1]);
@@ -561,11 +561,11 @@ int main()
             buffer[0]=buffer[1]=buffer[2]=0;    
         } 
     }
-    else if(buffer[0]==27) //escape
+    else if(buffer[0]==27) //Arrow Key pressing
     {
       if(buffer[1]==91)
       {
-        if(buffer[2]==65)
+        if(buffer[2]==65) //Up key
         {
             if(search_flag==0)
             {
@@ -601,7 +601,7 @@ int main()
             }
             //cout<<"up arrow pressed\n";
         }
-        if(buffer[2]==66)
+        if(buffer[2]==66) //Down key
         {
             if(search_flag==0)
             {
@@ -637,7 +637,7 @@ int main()
             }
            // cout<<"down arrow pressed\n";
         }
-        if(buffer[2]==67)
+        if(buffer[2]==67) //right key
         {
             if(search_flag==0)
             {
@@ -658,7 +658,7 @@ int main()
             }
          //   cout<<"right arrow pressed\n";
         }
-        if(buffer[2]==68)
+        if(buffer[2]==68) // left key
         {
             if(search_flag==0)
             {
@@ -693,7 +693,7 @@ int main()
         }   
       }
     }
-    else if(buffer[0]==10) //enter
+    else if(buffer[0]==10) //Enter key
     {
             if(search_flag==0)
             {
@@ -780,7 +780,7 @@ int main()
                         }
             }
     }
-    else if(buffer[0]==72 || buffer[0]==104 && !(strcmp(stack1.top().c_str(),".")==0)) //home
+    else if(buffer[0]==72 || buffer[0]==104 && !(strcmp(stack1.top().c_str(),".")==0)) //Home key
     {
             strcpy(path,".");
             ls(0,path);
@@ -793,7 +793,7 @@ int main()
             search_flag=0;
      // cout<<"home key pressed\n";
     }
-    else if(buffer[0]==8 || buffer[0]==127 && !(strcmp(stack1.top().c_str(),".")==0)) //bacspace
+    else if(buffer[0]==8 || buffer[0]==127 && !(strcmp(stack1.top().c_str(),".")==0)) //Bacspace
     {
         if(search_flag==0)
         {

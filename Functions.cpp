@@ -32,7 +32,7 @@ extern struct dirent **point_to_file;
 extern struct stat file_stat;
 extern struct winsize win;
 
-void snapsht(const char path[],const char destination[])
+void snapsht(const char path[],const char destination[]) //for snapshot
 {
     std::ofstream outfilepointer;
     outfilepointer.open(destination, std::ios_base::app);
@@ -67,9 +67,10 @@ void snapsht(const char path[],const char destination[])
     }
     outfilepointer.close();
 }
-void printlist(int startline)
+
+void printlist(int startline) // printing list of search found
 {   
-	 cout<<"\033[3J";
+	cout<<"\033[3J";
     cout<<"\033[H\033[J";
     cout<<"\n";
     int lastline;
@@ -88,6 +89,7 @@ void printlist(int startline)
             cout<<"\n"<<flush;
     }
 }
+
 int display_info(const char *fpath, const struct stat *sb,int tflag, struct FTW *ftwbuf)
 {
    // cout<<dst_root<<flush;
@@ -102,7 +104,7 @@ int search()
 {
     return nftw(stack1.top().c_str(), display_info, 20, FTW_DEPTH);
 }
-int copy_file(const char* src_path, const struct stat* sb, int typeflag) 
+int copy_file(const char* src_path, const struct stat* sb, int typeflag)  //copy Directory
 {
     std::string dst_path = dst_root + src_path;
     switch(typeflag) 
@@ -119,7 +121,7 @@ int copy_file(const char* src_path, const struct stat* sb, int typeflag)
     }
     return 0;
 }
-int removedir(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf)
+int removedir(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf) //remove directory
 {
     int rv = remove(fpath);
     if (rv)
@@ -134,7 +136,7 @@ int copy_directory(const char* src_root)
 {
     return ftw(src_root, copy_file,20);
 }
-bool copyFile(const char *SRC, const char* DEST)
+bool copyFile(const char *SRC, const char* DEST) /// copy file
 {
     std::ifstream src(SRC, std::ios::binary);
     std::ofstream dest(DEST, std::ios::binary);
@@ -143,7 +145,7 @@ bool copyFile(const char *SRC, const char* DEST)
     chmod(DEST, file_stat.st_mode);
     return src && dest;
 }
-string makefullpath(string str1)
+string makefullpath(string str1) //making absolute path
 {
     string str2;
     if(str1[0]=='~')
@@ -188,7 +190,7 @@ string makefullpath(string str1)
         return str2;
     }
 }
-string findname(string str1)
+string findname(string str1) //finding current directory
 {
     int i=str1.length()-1;
     string str2;
@@ -198,7 +200,7 @@ string findname(string str1)
     str2=str1.substr(i+1,str1.length()-i-1); 
     return str2;
 }
-string findpath(string tempstr)
+string findpath(string tempstr) //finding parent path
 {
     int i=tempstr.length()-1;
     while(tempstr[i]!='/')
@@ -207,7 +209,7 @@ string findpath(string tempstr)
     return tempstr;
 }
 
-void statusbar(string tempstr,const char current_path[])
+void statusbar(string tempstr,const char current_path[]) //printing status bar and path
 {   
     string newpath;
     newpath=current_path;
@@ -232,7 +234,7 @@ void statusbar(string tempstr,const char current_path[])
         cout<<"=";
 }
 
-void ls(int startline,const char path[])
+void ls(int startline,const char path[]) //listing files and folders
 {
 
     cout<<"\033[3J";
@@ -284,7 +286,7 @@ void ls(int startline,const char path[])
     }
 }
 
-void gotoNonCanon()
+void gotoNonCanon() //going to non canon
 {
     struct termios initial_settings, new_settings;
     FILE *input;
