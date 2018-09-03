@@ -1,0 +1,5 @@
+1. To add space or quotes please use backward slash \ .
+2. While writting commands to erase it, use backspace.
+3. After executing commands, a messeage will be shown for 2 seconds and after that it will be removed
+   automatically and after that you can write another command.
+4. List of files and directories will be refreshed if any changes is made in current dirctory using any commands. 
