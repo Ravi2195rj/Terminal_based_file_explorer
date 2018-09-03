@@ -37,20 +37,20 @@ struct winsize win;
 
 int main()
 {
-    ioctl(STDIN_FILENO, TIOCGWINSZ, &win);
+    ioctl(STDIN_FILENO, TIOCGWINSZ, &win); // Fetching window size
     total_rows=win.ws_row;
     total_columns=win.ws_col;
     listend=total_rows-5;
     commandmodeline=total_rows-1;
-    gotoNonCanon();
 
-    stack1.push(path);
+    gotoNonCanon(); //Going to Non Canon mode.
+
+    stack1.push(path); //Starting actual application with current directory as root.
     ls(0,path);
 
     statusbar("NORMAL MODE",path);
 
-    curser_row=2,curser_column=1;
-    
+    curser_row=2,curser_column=1;    
     cout<<"\033["<<curser_row<<";"<<curser_column<<"H"<<flush;
 
     while(1)
@@ -58,22 +58,21 @@ int main()
         char buffer[128];
         read(0,buffer,128);
 
-    if(buffer[0]==58) //colon
-    {
-        statusbar("COMMAND MODE",path);
-        int flag=1,curser=0;
+        if(buffer[0]==58) //Prssing Colon(:), Inside Command mode
+        {
+            statusbar("COMMAND MODE",path);
+            int flag=1,curser=0;
 
-        cout<<"\033["<<commandmodeline<<";1H> "<<flush;
-        curser_column=3;
+            cout<<"\033["<<commandmodeline<<";1H> "<<flush;
+            curser_column=3;
       
         while(flag)
         { 
             char command[500];
             read(0,buffer,128);
             
-            if(buffer[0]==27 && buffer[1]!=91)//esc key
+            if(buffer[0]==27 && buffer[1]!=91) // Esc key , Going back to normal mode
             {
-              //  cout<<"\nescap pressed: coming to normal mode"<<flush;
                 ls(0,stack1.top().c_str());
                 statusbar("NORMAL MODE",stack1.top().c_str());
                 curser_row=2;
@@ -82,14 +81,17 @@ int main()
                 cout<<"\033["<<curser_row<<";"<<curser_column<<"H"<<flush;
                 flag=0;
             }
-            else if(buffer[0]!=27 && buffer[0]!=127 && buffer[0]!=10)//any key data
+
+            else if(buffer[0]!=27 && buffer[0]!=127 && buffer[0]!=10)  //Entering Input or commands.
             {
                 command[curser++]=buffer[0];
                 cout<<buffer[0]<<flush;
                 cout<<"\033["<<commandmodeline<<";"<<++curser_column<<"H"<<flush;
             }
-            else if(buffer[0]==127 || buffer[0]==8) /// back space
+
+            else if(buffer[0]==127 || buffer[0]==8) // Pressing Back space to Erase text.
             {
+
                 if(curser_column>3)
                 {
                     command[--curser]=' ';
@@ -101,15 +103,14 @@ int main()
                 }
                   
             }
-            else if(buffer[0]==10)//enter key
+            else if(buffer[0]==10) // Pressing Enter key to execute commands
             {
-              //cout<<"in command mode:";
                 std:: vector<string> v;
                 command[curser]='\0';
                 char s[1000];
                 int j=0,i;
 
-                for(i=0;command[i]!='\0';i++)
+                for(i=0;command[i]!='\0';i++) // Differentiate Operation and Arguments.
                 {
                     if(command[i]==' ')
                     {
@@ -118,9 +119,7 @@ int main()
                         else
                         {
                             s[j]='\0';
-                            //cout<<s1<<": ";
-                            v.push_back(s);
-                            // s1.clear(); 
+                            v.push_back(s); 
                             j=0;    
                         }
                     }
@@ -129,11 +128,12 @@ int main()
                         s[j++]=command[i];
                     }
                 }
-                    s[j]=command[i];
-                    v.push_back(s);
-                    cout<<"\n";
 
-                if(v[0]=="copy")
+                s[j]=command[i];
+                v.push_back(s);
+                cout<<"\n";
+
+                if(v[0]=="copy")   //Executing copy command
                 {
                     
                     for(int i=1;i<v.size()-1;i++)
@@ -141,10 +141,10 @@ int main()
                         string destination_path=makefullpath(v[v.size()-1]);
                         string source_path=makefullpath(v[i]);
                         string temp;
-                        if(!stat(source_path.c_str(), &file_stat))
+                        if(!stat(source_path.c_str(), &file_stat)) // Checking whether source is correct or not
                         {
 
-                            if((file_stat.st_mode & S_IFMT)==S_IFDIR) //for directory
+                            if((file_stat.st_mode & S_IFMT)==S_IFDIR)   //  Copy directory
                             {
                                 if(!stat(destination_path.c_str(), &file_stat))
                                 {
@@ -167,21 +167,21 @@ int main()
                                 else
                                     cout<<"Destination path is not valid! "<<flush;
                             }
-                            else
+                            else                                                  //Copy File 
                             {   
-                                if(!stat(destination_path.c_str(), &file_stat))
+                                if(!stat(destination_path.c_str(), &file_stat)) 
                                 {
-                               // stat(source_path.c_str(), &file_stat);
+                                    // stat(source_path.c_str(), &file_stat);
                                     destination_path.append("/");
                                     destination_path.append(findname(source_path));
                                     if(stat(destination_path.c_str(), &file_stat))
                                     {
                                         if(copyFile(source_path.c_str(),destination_path.c_str()))
                                         {
-                                            cout<<"Dile copied successfully! "<<flush;
+                                            cout<<"File copied successfully! "<<flush;
                                         }
                                         else
-                                            cout<<"Dile does not exists or source or destination path is not valid!! "<<flush;    
+                                            cout<<"File does not exists or source or destination path is not valid!! "<<flush;    
                                     }
                                     else
                                         cout<<"FIle already exists! "<<flush;   
@@ -200,9 +200,6 @@ int main()
                     cout<<"\e[0J"<<flush;
                     ls(0,stack1.top().c_str());
                     statusbar("COMMAND MODE",path);
-                    // curser_row=2;
-                    // curser_column=1;
-                    // file_num=2;
                     cout<<"\033["<<commandmodeline<<";"<<1<<"H"<<flush;
                     cout<<"> "<<flush;
                     cout<<"\033["<<commandmodeline<<";"<<3<<"H"<<flush;
@@ -476,20 +473,40 @@ int main()
                     Name.clear();
                     Path.clear();
                     search();
+                    if(Name.size()!=0)
+                    {
+                        cout<<"\033[3J"<<flush;
+                        cout<<"\033[H\033[J"<<flush;
+                        cout<<"\n"<<flush;
+                        total_files=Name.size();
+                        printlist(0);
+                        statusbar("NORMAL MODE",path);
+                        curser_row=2;
+                        curser_column=1;
+                        file_num=2;
+                        cout<<"\033["<<curser_row<<";"<<curser_column<<"H"<<flush;
+                        flag=0;
+                        v.clear();
+                        search_flag=1;    
+                    }
+                    else
+                    {
+                        cout<<"No search found"<<flush;
+                        v.clear();
+                        sleep(2);
+                        cout<<"\033["<<commandmodeline<<";"<<3<<"H"<<flush;
+                        cout<<"\e[0J"<<flush;
+                        ls(0,stack1.top().c_str());
+                        statusbar("COMMAND MODE",path);
+                        // curser_row=2;
+                        // curser_column=1;
+                        // file_num=2;
+                        cout<<"\033["<<commandmodeline<<";"<<1<<"H"<<flush;
+                        cout<<"> "<<flush;
+                        cout<<"\033["<<commandmodeline<<";"<<3<<"H"<<flush;
+                        curser=0,curser_column=3;
+                    }
                     
-                    cout<<"\033[3J"<<flush;
-                    cout<<"\033[H\033[J"<<flush;
-                    cout<<"\n"<<flush;
-                    total_files=Name.size();
-                    printlist(0);
-                    statusbar("NORMAL MODE",path);
-                    curser_row=2;
-                    curser_column=1;
-                    file_num=2;
-                    cout<<"\033["<<curser_row<<";"<<curser_column<<"H"<<flush;
-                    flag=0;
-                    v.clear();
-                    search_flag=1;
                     // sleep(2);
                   //  curser=0,curser_column=3;
                 }
